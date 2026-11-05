@@ -20,6 +20,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bhoa.brawlcompetitive.ui.MetaScreen
+import com.bhoa.brawlcompetitive.ui.BrawlerCatalogScreen
+import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
+import com.bhoa.brawlcompetitive.data.Brawler
 import coil3.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +39,7 @@ private enum class Section(val title: String) {
 @Composable
 fun BrawlCompetitiveApp() {
     var section by remember { mutableStateOf(Section.HOME) }
+    var selectedBrawler by remember { mutableStateOf<Brawler?>(null) }
     MaterialTheme {
         Scaffold(
             topBar = { TopAppBar(title = { Text("Brawl Competitive", fontWeight = FontWeight.Bold) }) },
@@ -53,9 +57,11 @@ fun BrawlCompetitiveApp() {
             }
         ) { padding ->
             Box(Modifier.padding(padding).fillMaxSize()) {
-                when (section) {
+                if (selectedBrawler != null) {
+                    BrawlerDetailScreen(selectedBrawler!!) { selectedBrawler = null }
+                } else when (section) {
                     Section.HOME -> HomeScreen { section = it }
-                    Section.BRAWLERS -> PlaceholderScreen("Brawlers", "El catálogo completo se cargará desde la fuente de datos configurada.")
+                    Section.BRAWLERS -> BrawlerCatalogScreen { selectedBrawler = it }
                     Section.MAPS -> CatalogScreen("Mapas", demoMaps)
                     Section.META -> MetaScreen()
                     Section.COUNTERS -> PlaceholderScreen("Counters", "Elige un brawler y consulta sus enfrentamientos.")
