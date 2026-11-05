@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.bhoa.brawlcompetitive.data.Brawler
 import com.bhoa.brawlcompetitive.data.VisualAsset
 import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
+import com.bhoa.brawlcompetitive.ui.MetaScreen
 import coil3.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +63,7 @@ fun BrawlCompetitiveApp() {
                     Section.HOME -> HomeScreen { section = it }
                     Section.BRAWLERS -> BrawlerCatalogScreen(demoBrawlers) { selectedBrawler = it }
                     Section.MAPS -> CatalogScreen("Mapas", demoMaps)
-                    Section.META -> PlaceholderScreen("Meta competitivo", "Las estadísticas se conectarán al motor de datos.")
+                    Section.META -> MetaScreen(null)
                     Section.COUNTERS -> PlaceholderScreen("Counters", "Elige un brawler y consulta sus enfrentamientos.")
                     Section.PROFILE -> PlaceholderScreen("Perfil", "Busca un jugador mediante su tag cuando conectemos la API oficial.")
                 }
