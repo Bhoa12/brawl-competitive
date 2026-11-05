@@ -1,8 +1,1 @@
-{
-  "name": "brawl-competitive-backend",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build-meta": "node src/runBuild.js"
-  }
-}
+{"name":"brawl-competitive-backend","private":true,"type":"module","scripts":{"collect":"node src/collectBattleLogs.js","build-meta":"node src/runBuild.js","refresh":"node src/collectBattleLogs.js && node src/runBuild.js"}}
