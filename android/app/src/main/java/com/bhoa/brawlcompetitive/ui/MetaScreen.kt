@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -95,11 +96,27 @@ private fun FilterSelector(label: String, selected: String, options: List<String
 
 @Composable
 fun MetaScreen(snapshot: MetaSnapshot?) {
-    CompetitiveMetaScreen(
-        snapshot = snapshot,
-        maps = emptyList(),
-        modes = listOf("Atrapagemas", "Balón Brawl", "Noqueo", "Atraco", "Caza Estelar"),
-        ranks = listOf("Bronce", "Plata", "Oro", "Diamante", "Mítico", "Legendario", "Maestro"),
-        subranks = listOf("I", "II", "III")
-    )
+    val viewModel: CompetitiveMetaViewModel = viewModel()
+    val state by viewModel.state.collectAsState()
+
+    if (state.loading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+    } else if (state.response != null) {
+        MetaRankingScreen(response = state.response!!)
+    } else {
+        Column {
+            CompetitiveMetaScreen(
+                snapshot = snapshot,
+                maps = emptyList(),
+                modes = listOf("Atrapagemas", "Balón Brawl", "Noqueo", "Atraco", "Caza Estelar"),
+                ranks = listOf("Bronce", "Plata", "Oro", "Diamante", "Mítico", "Legendario", "Maestro"),
+                subranks = listOf("I", "II", "III")
+            )
+            Button(
+                onClick = { viewModel.refresh() },
+                modifier = Modifier.padding(16.dp).fillMaxWidth()
+            ) { Text("Consultar meta") }
+            state.error?.let { Text(it, modifier = Modifier.padding(16.dp)) }
+        }
+    }
 }
