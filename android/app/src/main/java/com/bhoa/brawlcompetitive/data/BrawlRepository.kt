@@ -1,0 +1,41 @@
+package com.bhoa.brawlcompetitive.data
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import java.net.HttpURLConnection
+import java.net.URL
+
+object BrawlRepository {
+    suspend fun loadBrawlers(): List<Brawler> = withContext(Dispatchers.IO) {
+        val connection = URL("https://api.brawlify.com/v1/brawlers").openConnection() as HttpURLConnection
+        connection.connectTimeout = 10000
+        connection.readTimeout = 15000
+        try {
+            if (connection.responseCode !in 200..299) return@withContext fallback()
+            val raw = connection.inputStream.bufferedReader().use { it.readText() }
+            parse(JSONArray(raw)).ifEmpty { fallback() }
+        } catch (_: Exception) { fallback() } finally { connection.disconnect() }
+    }
+
+    private fun parse(array: JSONArray) = buildList {
+        for (i in 0 until array.length()) {
+            val item = array.optJSONObject(i) ?: continue
+            val images = item.optJSONObject("imageUrl")
+            val image = images?.optString("portrait")?.takeIf { it.isNotBlank() }
+                ?: images?.optString("icon")?.takeIf { it.isNotBlank() }
+            add(Brawler(item.optInt("id"), item.optString("name"), image,
+                item.optString("description").takeIf { it.isNotBlank() },
+                item.optString("class").takeIf { it.isNotBlank() },
+                item.optJSONObject("rarity")?.optString("name")))
+        }
+    }
+
+    private fun fallback() = listOf(
+        "Shelly","Nita","Colt","Bull","Jessie","Brock","Dynamike","Bo","Tick","8-Bit",
+        "Emz","El Primo","Barley","Poco","Rosa","Rico","Darryl","Penny","Carl","Jacky",
+        "Piper","Pam","Frank","Bibi","Bea","Nani","Edgar","Griff","Grom","Bonnie",
+        "Gus","Sam","Mandy","Maisie","Hank","Pearl","Larry & Lawrie","Angelo","Melodie",
+        "Lily","Clancy","Moe","Kenji","Shade","Juju","Meeple","Ollie","Lumi"
+    ).mapIndexed { index, name -> Brawler(index + 1, name) }
+}
