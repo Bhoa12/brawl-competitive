@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.bhoa.brawlcompetitive.ui.MetaScreen
 import com.bhoa.brawlcompetitive.ui.BrawlerCatalogScreen
 import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
+import com.bhoa.brawlcompetitive.ui.MapCatalogScreen
 import com.bhoa.brawlcompetitive.data.Brawler
 import coil3.compose.AsyncImage
 
@@ -62,7 +63,7 @@ fun BrawlCompetitiveApp() {
                 } else when (section) {
                     Section.HOME -> HomeScreen { section = it }
                     Section.BRAWLERS -> BrawlerCatalogScreen { selectedBrawler = it }
-                    Section.MAPS -> CatalogScreen("Mapas", demoMaps)
+                    Section.MAPS -> MapCatalogScreen()
                     Section.META -> MetaScreen()
                     Section.COUNTERS -> PlaceholderScreen("Counters", "Elige un brawler y consulta sus enfrentamientos.")
                     Section.PROFILE -> PlaceholderScreen("Perfil", "Busca un jugador mediante su tag cuando conectemos la API oficial.")
