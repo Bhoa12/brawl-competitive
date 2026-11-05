@@ -13,10 +13,15 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "0.2.0"
     }
 
     buildFeatures { compose = true; buildConfig = true }
+
+    val apiBaseUrl = (project.findProperty("COMPETITIVE_API_BASE_URL") as String?) ?: ""
+    defaultConfig {
+        buildConfigField("String", "COMPETITIVE_API_BASE_URL", "\"$apiBaseUrl\"")
+    }
 
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }
@@ -29,5 +34,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
 }
