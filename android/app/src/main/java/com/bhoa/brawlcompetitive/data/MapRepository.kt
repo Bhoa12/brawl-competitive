@@ -8,7 +8,7 @@ import java.net.URL
 
 object MapRepository {
     suspend fun loadMaps(): List<BrawlMap> = withContext(Dispatchers.IO) {
-        val connection = URL("https://api.brawlify.com/v1/maps").openConnection() as HttpURLConnection
+        val connection = URL("https://api.brawlapi.com/v1/maps").openConnection() as HttpURLConnection
         connection.connectTimeout = 10000
         connection.readTimeout = 15000
         try {
