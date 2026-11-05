@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import DateTime, Float, Integer, JSON, String
+from sqlalchemy import DateTime, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db import Base
 
@@ -18,5 +18,8 @@ class BattleSampleRow(Base):
     battle_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     map_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     mode: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    rank: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    subrank: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    patch: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     brawler_ids: Mapped[list] = mapped_column(JSON, default=list)
     winner_brawler_ids: Mapped[list] = mapped_column(JSON, default=list)
