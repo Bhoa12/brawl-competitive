@@ -12,6 +12,12 @@ class PersistentStatsAggregator:
             samples = [s for s in samples if s.map_id == context.map_id]
         if context.mode:
             samples = [s for s in samples if s.mode == context.mode]
+        if context.rank:
+            samples = [s for s in samples if s.rank == context.rank]
+        if context.subrank:
+            samples = [s for s in samples if s.subrank == context.subrank]
+        if context.patch:
+            samples = [s for s in samples if s.patch == context.patch]
 
         picks, wins = Counter(), Counter()
         for sample in samples:
@@ -19,7 +25,7 @@ class PersistentStatsAggregator:
             wins.update(sample.winner_brawler_ids)
 
         rows = [{
-            "brawler_id": bid,
+            "brawler_id": str(bid),
             "picks": count,
             "pick_rate": round(count / max(1, len(samples)) * 100, 2),
             "wins": wins[bid],
