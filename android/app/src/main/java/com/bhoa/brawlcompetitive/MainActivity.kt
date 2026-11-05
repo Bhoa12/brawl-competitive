@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.bhoa.brawlcompetitive.data.Brawler
+import com.bhoa.brawlcompetitive.data.VisualAsset
+import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
 import coil3.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
@@ -35,6 +38,7 @@ private enum class Section(val title: String) {
 @Composable
 fun BrawlCompetitiveApp() {
     var section by remember { mutableStateOf(Section.HOME) }
+    var selectedBrawler by remember { mutableStateOf<Brawler?>(null) }
     MaterialTheme {
         Scaffold(
             topBar = { TopAppBar(title = { Text("Brawl Competitive", fontWeight = FontWeight.Bold) }) },
@@ -52,9 +56,11 @@ fun BrawlCompetitiveApp() {
             }
         ) { padding ->
             Box(Modifier.padding(padding).fillMaxSize()) {
-                when (section) {
+                if (selectedBrawler != null) {
+                    BrawlerDetailScreen(selectedBrawler!!) { selectedBrawler = null }
+                } else when (section) {
                     Section.HOME -> HomeScreen { section = it }
-                    Section.BRAWLERS -> CatalogScreen("Brawlers", demoBrawlers)
+                    Section.BRAWLERS -> BrawlerCatalogScreen(demoBrawlers) { selectedBrawler = it }
                     Section.MAPS -> CatalogScreen("Mapas", demoMaps)
                     Section.META -> PlaceholderScreen("Meta competitivo", "Las estadísticas se conectarán al motor de datos.")
                     Section.COUNTERS -> PlaceholderScreen("Counters", "Elige un brawler y consulta sus enfrentamientos.")
@@ -122,11 +128,32 @@ private fun sectionIcon(section: Section) = when (section) {
 
 private data class VisualEntry(val name: String, val image: String)
 private val demoBrawlers = listOf(
-    VisualEntry("Shelly", "https://cdn.brawlify.com/brawlers/borderless/16000000.png"),
-    VisualEntry("Colt", "https://cdn.brawlify.com/brawlers/borderless/16000001.png"),
-    VisualEntry("Bull", "https://cdn.brawlify.com/brawlers/borderless/16000002.png"),
-    VisualEntry("Jessie", "https://cdn.brawlify.com/brawlers/borderless/16000003.png")
+    Brawler("16000000", "Shelly", "https://cdn.brawlify.com/brawlers/borderless/16000000.png", "Versátil y peligrosa a corta distancia.", "Damage Dealer", "Starting Brawler",
+        listOf(VisualAsset("23000000", "Fast Forward", null), VisualAsset("23000001", "Clay Pigeons", null)),
+        listOf(VisualAsset("23000076", "Shell Shock", null), VisualAsset("23000077", "Band-Aid", null))),
+    Brawler("16000001", "Colt", "https://cdn.brawlify.com/brawlers/borderless/16000001.png", "Alta precisión y daño a distancia.", "Damage Dealer", "Rare"),
+    Brawler("16000002", "Bull", "https://cdn.brawlify.com/brawlers/borderless/16000002.png", "Tanque de corto alcance.", "Tank", "Rare"),
+    Brawler("16000003", "Jessie", "https://cdn.brawlify.com/brawlers/borderless/16000003.png", "Control y rebotes.", "Controller", "Rare")
 )
 private val demoMaps = listOf(
     VisualEntry("Mapas competitivos", "https://cdn.brawlify.com/maps/15000000.png")
 )
+
+
+@Composable
+private fun BrawlerCatalogScreen(entries: List<Brawler>, onSelect: (Brawler) -> Unit) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Brawlers", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(12.dp))
+        LazyVerticalGrid(columns = GridCells.Adaptive(150.dp), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(entries) { entry ->
+                ElevatedCard(Modifier.clickable { onSelect(entry) }) {
+                    Column {
+                        AsyncImage(model = entry.imageUrl, contentDescription = entry.name, modifier = Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
+                        Text(entry.name, Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
