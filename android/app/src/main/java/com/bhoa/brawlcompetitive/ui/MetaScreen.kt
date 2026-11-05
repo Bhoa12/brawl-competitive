@@ -1,23 +1,16 @@
 package com.bhoa.brawlcompetitive.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.bhoa.brawlcompetitive.data.MetaSnapshot
 
-data class CompetitiveFilterOption(val name: String, val imageUrl: String? = null)
+data class CompetitiveFilterOption(val id: Int? = null, val name: String, val imageUrl: String? = null)
 
 @Composable
 fun CompetitiveMetaScreen(
@@ -26,36 +19,27 @@ fun CompetitiveMetaScreen(
     modes: List<String>,
     ranks: List<String>,
     subranks: List<String>,
-    onFiltersChanged: (map: String?, mode: String?, rank: String?, subrank: String?) -> Unit = { _, _, _, _ -> }
+    onFiltersChanged: (mapId: Int?, mode: String?, rank: String?, subrank: String?) -> Unit
 ) {
     var selectedMap by remember { mutableStateOf<CompetitiveFilterOption?>(null) }
     var selectedMode by remember { mutableStateOf<String?>(null) }
     var selectedRank by remember { mutableStateOf<String?>(null) }
     var selectedSubrank by remember { mutableStateOf<String?>(null) }
 
-    fun changed() = onFiltersChanged(selectedMap?.name, selectedMode, selectedRank, selectedSubrank)
+    fun changed() = onFiltersChanged(selectedMap?.id, selectedMode, selectedRank, selectedSubrank)
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Meta competitivo", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Filtra el análisis antes de consultar las estadísticas.", style = MaterialTheme.typography.bodyMedium)
+        Text("Selecciona el contexto competitivo y consulta datos reales.")
 
         FilterSelector("Mapa", selectedMap?.name ?: "Todos", maps.map { it.name }) {
-            selectedMap = maps.firstOrNull { option -> option.name == it }
-            changed()
+            selectedMap = maps.firstOrNull { option -> option.name == it }; changed()
         }
-        FilterSelector("Modo", selectedMode ?: "Todos", modes) {
-            selectedMode = it
-            changed()
-        }
+        FilterSelector("Modo", selectedMode ?: "Todos", modes) { selectedMode = it; changed() }
         FilterSelector("Rango", selectedRank ?: "Todos", ranks) {
-            selectedRank = it
-            selectedSubrank = null
-            changed()
+            selectedRank = it; selectedSubrank = null; changed()
         }
-        FilterSelector("Subrango", selectedSubrank ?: "Todos", subranks) {
-            selectedSubrank = it
-            changed()
-        }
+        FilterSelector("Subrango", selectedSubrank ?: "Todos", subranks) { selectedSubrank = it; changed() }
 
         snapshot?.let {
             ElevatedCard(Modifier.fillMaxWidth()) {
@@ -64,11 +48,6 @@ fun CompetitiveMetaScreen(
                     Text("Parche: " + it.patch + " · Muestra: " + it.sampleSize)
                     Text("Actualizado: " + it.updatedAt, style = MaterialTheme.typography.labelSmall)
                 }
-            }
-        } ?: ElevatedCard(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(14.dp)) {
-                Text("Esperando datos del contexto seleccionado", fontWeight = FontWeight.Bold)
-                Text("No se mostrarán estadísticas inventadas.")
             }
         }
     }
@@ -81,14 +60,11 @@ private fun FilterSelector(label: String, selected: String, options: List<String
         Text(label, fontWeight = FontWeight.Bold)
         Box {
             OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(selected, modifier = Modifier.weight(1f))
-                Text("▼")
+                Text(selected, modifier = Modifier.weight(1f)); Text("▼")
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(text = { Text("Todos") }, onClick = { expanded = false; onSelect(null) })
-                options.forEach { option ->
-                    DropdownMenuItem(text = { Text(option) }, onClick = { expanded = false; onSelect(option) })
-                }
+                options.forEach { option -> DropdownMenuItem(text = { Text(option) }, onClick = { expanded = false; onSelect(option) }) }
             }
         }
     }
@@ -98,6 +74,10 @@ private fun FilterSelector(label: String, selected: String, options: List<String
 fun MetaScreen(snapshot: MetaSnapshot?) {
     val viewModel: CompetitiveMetaViewModel = viewModel()
     val state by viewModel.state.collectAsState()
+    var selectedMapId by remember { mutableStateOf<Int?>(null) }
+    var selectedMode by remember { mutableStateOf<String?>(null) }
+    var selectedRank by remember { mutableStateOf<String?>(null) }
+    var selectedSubrank by remember { mutableStateOf<String?>(null) }
 
     if (state.loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -110,10 +90,13 @@ fun MetaScreen(snapshot: MetaSnapshot?) {
                 maps = emptyList(),
                 modes = listOf("Atrapagemas", "Balón Brawl", "Noqueo", "Atraco", "Caza Estelar"),
                 ranks = listOf("Bronce", "Plata", "Oro", "Diamante", "Mítico", "Legendario", "Maestro"),
-                subranks = listOf("I", "II", "III")
+                subranks = listOf("I", "II", "III"),
+                onFiltersChanged = { mapId, mode, rank, subrank ->
+                    selectedMapId = mapId; selectedMode = mode; selectedRank = rank; selectedSubrank = subrank
+                }
             )
             Button(
-                onClick = { viewModel.refresh() },
+                onClick = { viewModel.refresh(selectedMapId, selectedMode, selectedRank, selectedSubrank) },
                 modifier = Modifier.padding(16.dp).fillMaxWidth()
             ) { Text("Consultar meta") }
             state.error?.let { Text(it, modifier = Modifier.padding(16.dp)) }
