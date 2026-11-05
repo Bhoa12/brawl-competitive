@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +27,7 @@ fun MetaOverviewScreen() {
     var cachedAt by remember { mutableStateOf(MetaSyncStore.load(context)?.savedAt ?: 0L) }
     var loading by remember { mutableStateOf(true) }
     var syncing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     suspend fun sync() {
         syncing = true
@@ -50,7 +52,7 @@ fun MetaOverviewScreen() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(if (cachedAt > 0) "Última sincronización: " + DateFormat.getDateTimeInstance().format(Date(cachedAt)) else "Sin datos competitivos descargados")
             Spacer(Modifier.weight(1f))
-            TextButton(enabled = !syncing, onClick = { syncing = true }) {
+            TextButton(enabled = !syncing, onClick = { scope.launch { sync() } }) {
                 Text(if (syncing) "Sincronizando…" else "Actualizar")
             }
         }
