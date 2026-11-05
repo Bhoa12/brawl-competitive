@@ -14,7 +14,7 @@ init_db()
 
 app = FastAPI(
     title="Brawl Competitive API",
-    version="0.10.0",
+    version="0.11.0",
     description="Backend for competitive Brawl Stars analysis.",
 )
 
