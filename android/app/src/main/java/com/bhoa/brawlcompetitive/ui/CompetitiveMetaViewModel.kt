@@ -3,6 +3,7 @@ package com.bhoa.brawlcompetitive.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bhoa.brawlcompetitive.network.AnalyticsResponse
+import com.bhoa.brawlcompetitive.BuildConfig
 import com.bhoa.brawlcompetitive.network.CompetitiveApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
