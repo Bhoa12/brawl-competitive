@@ -22,21 +22,29 @@ object BrawlRepository {
     private fun parse(array: JSONArray) = buildList {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
-            val images = item.optJSONObject("imageUrl")
-            val image = images?.optString("portrait")?.takeIf { it.isNotBlank() }
-                ?: images?.optString("icon")?.takeIf { it.isNotBlank() }
-            add(Brawler(item.optInt("id"), item.optString("name"), image,
-                item.optString("description").takeIf { it.isNotBlank() },
-                item.optString("class").takeIf { it.isNotBlank() },
-                item.optJSONObject("rarity")?.optString("name")))
+            val gadgets = parseAssets(item.optJSONArray("gadgets"))
+            val stars = parseAssets(item.optJSONArray("starPowers"))
+            add(Brawler(
+                id = item.optInt("id"),
+                name = item.optString("name"),
+                imageUrl = item.optString("imageUrl").takeIf { it.isNotBlank() },
+                description = item.optString("description").takeIf { it.isNotBlank() },
+                brawlerClass = item.optJSONObject("class")?.optString("name"),
+                rarity = item.optJSONObject("rarity")?.optString("name"),
+                gadgets = gadgets,
+                starPowers = stars
+            ))
         }
     }
 
-    private fun fallback() = listOf(
-        "Shelly","Nita","Colt","Bull","Jessie","Brock","Dynamike","Bo","Tick","8-Bit",
-        "Emz","El Primo","Barley","Poco","Rosa","Rico","Darryl","Penny","Carl","Jacky",
-        "Piper","Pam","Frank","Bibi","Bea","Nani","Edgar","Griff","Grom","Bonnie",
-        "Gus","Sam","Mandy","Maisie","Hank","Pearl","Larry & Lawrie","Angelo","Melodie",
-        "Lily","Clancy","Moe","Kenji","Shade","Juju","Meeple","Ollie","Lumi"
-    ).mapIndexed { index, name -> Brawler(index + 1, name) }
+    private fun parseAssets(array: JSONArray?): List<VisualAsset> = buildList {
+        if (array == null) return@buildList
+        for (i in 0 until array.length()) {
+            val item = array.optJSONObject(i) ?: continue
+            add(VisualAsset(item.optString("name"), item.optString("imageUrl").takeIf { it.isNotBlank() },
+                item.optString("description").takeIf { it.isNotBlank() }))
+        }
+    }
+
+    private fun fallback() = listOf("Shelly","Nita","Colt","Bull","Jessie","Brock","Dynamike","Bo","Tick","8-Bit","Emz","El Primo","Barley","Poco","Rosa","Rico","Darryl","Penny","Carl","Jacky","Piper","Pam","Frank","Bibi","Bea","Nani","Edgar","Griff","Grom","Bonnie","Gus","Sam","Mandy","Maisie","Hank","Pearl","Larry & Lawrie","Angelo","Melodie","Lily","Clancy","Moe","Kenji","Shade","Juju","Meeple","Ollie","Lumi").mapIndexed { index, name -> Brawler(index + 1, name) }
 }
