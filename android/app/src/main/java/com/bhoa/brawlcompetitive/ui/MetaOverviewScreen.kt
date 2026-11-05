@@ -11,25 +11,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bhoa.brawlcompetitive.data.BrawlRepository
 import com.bhoa.brawlcompetitive.data.Brawler
+import com.bhoa.brawlcompetitive.data.CompetitiveRepository
+import com.bhoa.brawlcompetitive.data.MetaEntry
 
 @Composable
 fun MetaOverviewScreen() {
     var brawlers by remember { mutableStateOf<List<Brawler>>(emptyList()) }
-    LaunchedEffect(Unit) { brawlers = BrawlRepository.loadBrawlers() }
+    var meta by remember { mutableStateOf<List<MetaEntry>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        brawlers = BrawlRepository.loadBrawlers()
+        meta = CompetitiveRepository.loadMeta()
+        loading = false
+    }
+
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Meta competitivo", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Vista general. Las estadísticas por rango y mapa requieren una fuente analítica configurada.")
+        Spacer(Modifier.height(4.dp))
+        if (meta.isEmpty()) {
+            ElevatedCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("Fuente competitiva en preparación", fontWeight = FontWeight.Bold)
+                    Text("Los datos del juego se actualizan automáticamente, pero las estadísticas de uso, victorias y rangos solo aparecerán cuando exista una muestra analítica verificable.")
+                }
+            }
+        }
         Spacer(Modifier.height(12.dp))
-        if (brawlers.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        else LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(brawlers.take(12)) { b ->
-                ElevatedCard(Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("★", style = MaterialTheme.typography.titleLarge); Spacer(Modifier.width(12.dp))
-                        Column { Text(b.name, fontWeight = FontWeight.Bold); Text(b.brawlerClass ?: "Brawler") }
+        if (loading) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        else if (meta.isNotEmpty()) {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(meta.sortedByDescending { it.winRate ?: 0.0 }) { entry ->
+                    ElevatedCard(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text(entry.brawlerName, fontWeight = FontWeight.Bold)
+                            Text(listOfNotNull(entry.mode, entry.mapName, entry.rank).joinToString(" · "))
+                            entry.pickRate?.let { Text("Uso: " + String.format("%.1f%%", it)) }
+                            entry.winRate?.let { Text("Victorias: " + String.format("%.1f%%", it)) }
+                            entry.sampleSize?.let { Text("Muestra: " + it) }
+                        }
                     }
                 }
             }
+        } else if (brawlers.isNotEmpty()) {
+            Text("Catálogo disponible: " + brawlers.size + " brawlers. El ranking competitivo se activará al conectar el backend de estadísticas.")
         }
     }
 }
