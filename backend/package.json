@@ -1,0 +1,8 @@
+{
+  "name": "brawl-competitive-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build-meta": "node src/runBuild.js"
+  }
+}
