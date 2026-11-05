@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-05T00:00:00Z",
+  "windowDays": 28,
+  "methodology": "Aggregated from collected recent battle logs",
+  "entries": [
+    {
+      "brawlerId": 16000000,
+      "brawlerName": "Example",
+      "mapName": "Example Map",
+      "mode": "Ranked",
+      "rank": "General",
+      "pickRate": 0.0,
+      "winRate": 0.0,
+      "sampleSize": 0,
+      "updatedAt": 0
+    }
+  ]
+}
