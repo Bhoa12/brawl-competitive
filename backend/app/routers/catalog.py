@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Query
-from app.models.game import Brawler, Map
-from app.services.brawlapi import brawl_api
+from fastapi import APIRouter
+from app.services.catalog_service import catalog_service
+
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
-@router.get("/brawlers", response_model=list[Brawler])
-async def get_brawlers():
-    return await brawl_api.brawlers()
+@router.get("")
+async def catalog():
+    return catalog_service.get()
 
-@router.get("/maps", response_model=list[Map])
-async def get_maps(active_only: bool = Query(False)):
-    return await brawl_api.maps(active_only=active_only)
+@router.get("/brawlers")
+async def brawlers():
+    return catalog_service.get().brawlers
+
+@router.get("/maps")
+async def maps():
+    return catalog_service.get().maps
