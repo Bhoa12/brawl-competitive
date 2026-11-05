@@ -34,8 +34,10 @@ class CompetitiveApi(private val baseUrl: String) {
             "rank" to rank,
             "subrank" to subrank,
             "patch" to patch
-        ).filter { it.second != null }
-            .joinToString("&") { (key, value) -> key + "=" + URLEncoder.encode(value, "UTF-8") }
+        ).mapNotNull { (key, value) ->
+                value?.let { key + "=" + URLEncoder.encode(it, "UTF-8") }
+            }
+            .joinToString("&")
 
         val url = URL(baseUrl.trimEnd('/') + "/analytics/summary" + if (parameters.isEmpty()) "" else "?" + parameters)
         val connection = (url.openConnection() as HttpURLConnection).apply {
