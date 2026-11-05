@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from app.models.ingestion import BattleSample, IngestionResult
 from app.services.official_api import official_api
+from app.db import SessionLocal
+from app.services.battle_repository import battle_repository
 
 
 class BattleIngestionService:
@@ -39,7 +41,7 @@ class BattleIngestionService:
             except (KeyError, ValueError):
                 battle_time = datetime.now(timezone.utc)
 
-            self.samples.append(BattleSample(
+            sample = BattleSample(
                 battle_time=battle_time,
                 event_id=event.get("id"),
                 map_id=event.get("map", {}).get("id"),
@@ -48,7 +50,14 @@ class BattleIngestionService:
                 brawler_ids=brawler_ids,
                 winner_brawler_ids=winner_ids,
                 source_player_tag=player_tag,
-            ))
+            )
+            self.samples.append(sample)
+            db = SessionLocal()
+            try:
+                battle_repository.add(db, sample)
+                battle_repository.commit(db)
+            finally:
+                db.close()
             accepted += 1
 
         return IngestionResult(
