@@ -1,18 +1,23 @@
 package com.bhoa.brawlcompetitive.data
 
 data class CompetitiveBuild(
-    val gadget: VisualAsset? = null,
-    val starPower: VisualAsset? = null,
-    val gear1: VisualAsset? = null,
-    val gear2: VisualAsset? = null,
-    val hypercharge: VisualAsset? = null,
-    val patch: String? = null
+    val gadget: String? = null,
+    val starPower: String? = null,
+    val gears: List<String> = emptyList(),
+    val hypercharge: Boolean = false,
+    val source: String = "Pendiente de fuente analítica"
 )
 
-data class CounterRecommendation(
-    val targetName: String,
-    val counterName: String,
-    val confidence: Float,
-    val reason: String,
-    val build: CompetitiveBuild
+data class MetaEntry(
+    val brawlerId: Int,
+    val brawlerName: String,
+    val mapName: String? = null,
+    val mode: String? = null,
+    val rank: String = "General",
+    val subRank: String? = null,
+    val pickRate: Double? = null,
+    val winRate: Double? = null,
+    val sampleSize: Int? = null,
+    val updatedAt: Long? = null,
+    val build: CompetitiveBuild? = null
 )
