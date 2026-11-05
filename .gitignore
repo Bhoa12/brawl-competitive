@@ -1,0 +1,12 @@
+.idea/
+.gradle/
+local.properties
+*.iml
+build/
+**/build/
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
