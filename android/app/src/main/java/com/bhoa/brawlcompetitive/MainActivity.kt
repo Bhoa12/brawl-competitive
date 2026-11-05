@@ -123,22 +123,3 @@ private data class VisualEntry(val name: String, val image: String)
 private val demoMaps = listOf(
     VisualEntry("Mapas competitivos", "https://cdn.brawlify.com/maps/15000000.png")
 )
-
-
-@Composable
-private fun BrawlerCatalogScreen(entries: List<Brawler>, onSelect: (Brawler) -> Unit) {
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Brawlers", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp))
-        LazyVerticalGrid(columns = GridCells.Adaptive(150.dp), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(entries) { entry ->
-                ElevatedCard(Modifier.clickable { onSelect(entry) }) {
-                    Column {
-                        AsyncImage(model = entry.imageUrl, contentDescription = entry.name, modifier = Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
-                        Text(entry.name, Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-    }
-}
