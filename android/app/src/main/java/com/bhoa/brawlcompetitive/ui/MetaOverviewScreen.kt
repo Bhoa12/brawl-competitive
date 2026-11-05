@@ -7,33 +7,59 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bhoa.brawlcompetitive.data.BrawlRepository
 import com.bhoa.brawlcompetitive.data.Brawler
 import com.bhoa.brawlcompetitive.data.CompetitiveRepository
 import com.bhoa.brawlcompetitive.data.MetaEntry
+import com.bhoa.brawlcompetitive.data.MetaSyncStore
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 fun MetaOverviewScreen() {
+    val context = LocalContext.current
     var brawlers by remember { mutableStateOf<List<Brawler>>(emptyList()) }
-    var meta by remember { mutableStateOf<List<MetaEntry>>(emptyList()) }
+    var meta by remember { mutableStateOf(MetaSyncStore.load(context)?.entries ?: emptyList()) }
+    var cachedAt by remember { mutableStateOf(MetaSyncStore.load(context)?.savedAt ?: 0L) }
     var loading by remember { mutableStateOf(true) }
+    var syncing by remember { mutableStateOf(false) }
+
+    suspend fun sync() {
+        syncing = true
+        val fresh = CompetitiveRepository.loadMeta()
+        if (fresh.isNotEmpty()) {
+            meta = fresh
+            MetaSyncStore.save(context, fresh)
+            cachedAt = System.currentTimeMillis()
+        }
+        syncing = false
+    }
 
     LaunchedEffect(Unit) {
         brawlers = BrawlRepository.loadBrawlers()
-        meta = CompetitiveRepository.loadMeta()
+        sync()
         loading = false
     }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Meta competitivo", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(if (cachedAt > 0) "Última sincronización: " + DateFormat.getDateTimeInstance().format(Date(cachedAt)) else "Sin datos competitivos descargados")
+            Spacer(Modifier.weight(1f))
+            TextButton(enabled = !syncing, onClick = { syncing = true }) {
+                Text(if (syncing) "Sincronizando…" else "Actualizar")
+            }
+        }
+        Spacer(Modifier.height(8.dp))
         if (meta.isEmpty()) {
             ElevatedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp)) {
                     Text("Fuente competitiva en preparación", fontWeight = FontWeight.Bold)
-                    Text("Los datos del juego se actualizan automáticamente, pero las estadísticas de uso, victorias y rangos solo aparecerán cuando exista una muestra analítica verificable.")
+                    Text("La app conserva automáticamente los últimos datos válidos. Las estadísticas solo aparecerán cuando el backend publique una muestra verificable.")
                 }
             }
         }
@@ -54,7 +80,7 @@ fun MetaOverviewScreen() {
                 }
             }
         } else if (brawlers.isNotEmpty()) {
-            Text("Catálogo disponible: " + brawlers.size + " brawlers. El ranking competitivo se activará al conectar el backend de estadísticas.")
+            Text("Catálogo disponible: " + brawlers.size + " brawlers. El ranking competitivo se activará automáticamente cuando el backend publique datos verificables.")
         }
     }
 }
