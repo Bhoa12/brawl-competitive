@@ -63,7 +63,7 @@ fun BrawlCompetitiveApp() {
                     Section.HOME -> HomeScreen { section = it }
                     Section.BRAWLERS -> BrawlerCatalogScreen(demoBrawlers) { selectedBrawler = it }
                     Section.MAPS -> CatalogScreen("Mapas", demoMaps)
-                    Section.META -> MetaScreen(null)
+                    Section.META -> MetaScreen()
                     Section.COUNTERS -> PlaceholderScreen("Counters", "Elige un brawler y consulta sus enfrentamientos.")
                     Section.PROFILE -> PlaceholderScreen("Perfil", "Busca un jugador mediante su tag cuando conectemos la API oficial.")
                 }
