@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.init_db import init_db
 from app.routers.catalog import router as catalog_router
 from app.routers.competitive import router as competitive_router
 from app.routers.health import router as health_router
@@ -8,9 +9,11 @@ from app.routers.ingestion import router as ingestion_router
 from app.routers.statistics import router as statistics_router
 from app.routers.snapshots import router as snapshots_router
 
+init_db()
+
 app = FastAPI(
     title="Brawl Competitive API",
-    version="0.8.0",
+    version="0.9.0",
     description="Backend for competitive Brawl Stars analysis.",
 )
 
