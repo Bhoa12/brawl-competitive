@@ -1,0 +1,28 @@
+name: Catalog change monitor
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check current Brawl Stars catalog fingerprint
+        run: |
+          python - <<'PY'
+          import hashlib, json, urllib.request
+          base = "https://api.brawlapi.com/v1"
+          data = {}
+          for name in ("brawlers", "maps"):
+              with urllib.request.urlopen(f"{base}/{name}", timeout=30) as response:
+                  payload = json.load(response)
+              data[name] = [(x["id"], x.get("version")) for x in payload.get("list", [])]
+          print("catalog_sha256=" + hashlib.sha256(repr(data).encode()).hexdigest())
+          print("Brawlers:", len(data["brawlers"]))
+          print("Maps:", len(data["maps"]))
+          PY
