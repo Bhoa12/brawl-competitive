@@ -5,8 +5,6 @@ package com.bhoa.brawlcompetitive.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
