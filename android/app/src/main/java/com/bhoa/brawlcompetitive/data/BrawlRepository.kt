@@ -3,6 +3,7 @@ package com.bhoa.brawlcompetitive.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -14,7 +15,7 @@ object BrawlRepository {
         try {
             if (connection.responseCode !in 200..299) return@withContext fallback()
             val raw = connection.inputStream.bufferedReader().use { it.readText() }
-            parse(JSONArray(raw)).ifEmpty { fallback() }
+            parse(JSONObject(raw).optJSONArray("list") ?: JSONArray()).ifEmpty { fallback() }
         } catch (_: Exception) { fallback() } finally { connection.disconnect() }
     }
 
