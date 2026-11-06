@@ -1,7 +1,20 @@
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from app.models.catalog import CatalogBrawler, CatalogImage, CatalogMap
 from app.services.catalog_service import catalog_service
 from app.services.providers.brawlapi_provider import brawlapi_provider
+
+@dataclass(frozen=True)
+class CompetitivePoolVersion:
+    season: str
+    updated_at: str
+    source: str
+
+COMPETITIVE_POOL_VERSION = CompetitivePoolVersion(
+    season="current",
+    updated_at="2026-11-06",
+    source="Competitive Data Hub",
+)
 
 # Current Ranked pool is maintained separately from the historical map catalog.
 COMPETITIVE_MAP_POOL = {
@@ -62,6 +75,9 @@ class CompetitiveDataHub:
         )
         return {
             "source": source.source,
+            "pool_version": COMPETITIVE_POOL_VERSION.season,
+            "pool_updated_at": COMPETITIVE_POOL_VERSION.updated_at,
+            "pool_source": COMPETITIVE_POOL_VERSION.source,
             "updated_at": catalog.updated_at.isoformat(),
             "brawlers": len(brawlers),
             "maps_cached": len(maps),
