@@ -25,6 +25,7 @@ import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
 import com.bhoa.brawlcompetitive.ui.MapCatalogScreen
 import com.bhoa.brawlcompetitive.ui.CountersScreen
 import com.bhoa.brawlcompetitive.ui.MetaOverviewScreen
+import com.bhoa.brawlcompetitive.ui.ProfileScreen
 import com.bhoa.brawlcompetitive.data.Brawler
 import coil3.compose.AsyncImage
 
@@ -68,7 +69,7 @@ fun BrawlCompetitiveApp() {
                     Section.MAPS -> MapCatalogScreen()
                     Section.META -> MetaOverviewScreen()
                     Section.COUNTERS -> CountersScreen()
-                    Section.PROFILE -> PlaceholderScreen("Perfil", "Busca un jugador mediante su tag cuando conectemos la API oficial.")
+                    Section.PROFILE -> ProfileScreen()
                 }
             }
         }
