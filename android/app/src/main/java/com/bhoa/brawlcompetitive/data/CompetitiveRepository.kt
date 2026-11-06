@@ -20,35 +20,43 @@ object CompetitiveRepository {
         "https://raw.githubusercontent.com/Bhoa12/brawl-competitive/main/backend/public/meta.json"
 
     private val metaUrl: String
-        get() = BuildConfig.COMPETITIVE_API_BASE_URL
-            .trim()
-            .takeIf { it.isNotEmpty() }
-            ?: DEFAULT_META_URL
+        get() {
+            val base = BuildConfig.COMPETITIVE_API_BASE_URL.trim().removeSuffix("/")
+            return if (base.startsWith("http")) "$base/meta/snapshot" else DEFAULT_META_URL
+        }
 
     suspend fun loadMetaDocument(): MetaDocument? = withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
         try {
-            val connection = URL(metaUrl).openConnection() as HttpURLConnection
+            connection = URL(metaUrl).openConnection() as HttpURLConnection
             connection.connectTimeout = 5000
             connection.readTimeout = 10000
             connection.setRequestProperty("Accept", "application/json")
-            connection.use {
-                if (it.responseCode !in 200..299) return@withContext null
-                val root = JSONObject(it.inputStream.bufferedReader().use { reader -> reader.readText() })
-                MetaDocument(
-                    entries = parse(root.optJSONArray("entries") ?: JSONArray()),
-                    generatedAt = root.optString("generatedAt").takeIf { value -> value.isNotBlank() },
-                    totalMatches = root.optInt("totalMatches").takeIf { value -> value > 0 },
-                    methodology = root.optString("methodology").takeIf { value -> value.isNotBlank() }
-                )
-            }
+            if (connection.responseCode !in 200..299) return@withContext null
+
+            val json = connection.inputStream.bufferedReader().use { it.readText() }
+            val root = JSONObject(json)
+            val entries = root.optJSONArray("entries")
+                ?: root.optJSONArray("metrics")
+                ?: JSONArray()
+            MetaDocument(
+                entries = parse(entries),
+                generatedAt = root.optString("generatedAt").takeIf { it.isNotBlank() }
+                    ?: root.optString("updated_at").takeIf { it.isNotBlank() },
+                totalMatches = root.optInt("totalMatches").takeIf { it > 0 }
+                    ?: root.optInt("sample_size").takeIf { it > 0 },
+                methodology = root.optString("methodology").takeIf { it.isNotBlank() }
+            )
         } catch (_: Exception) {
             null
+        } finally {
+            connection?.disconnect()
         }
     }
 
     suspend fun loadMeta(): List<MetaEntry> = loadMetaDocument()?.entries ?: emptyList()
 
-    private fun parse(array: JSONArray) = buildList {
+    private fun parse(array: JSONArray): List<MetaEntry> = buildList {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
             add(MetaEntry(
