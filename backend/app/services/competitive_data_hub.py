@@ -84,6 +84,7 @@ class CompetitiveDataHub:
         )
         return {
             "source": source.source,
+            "data_policy": "official_or_structured_catalog; third-party sites are reference inputs for validation and metadata only",
             "pool_version": COMPETITIVE_POOL_VERSION.season,
             "pool_updated_at": COMPETITIVE_POOL_VERSION.updated_at,
             "pool_source": COMPETITIVE_POOL_VERSION.source,
