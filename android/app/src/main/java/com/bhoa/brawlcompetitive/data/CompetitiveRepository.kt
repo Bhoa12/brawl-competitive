@@ -20,8 +20,10 @@ object CompetitiveRepository {
         "https://raw.githubusercontent.com/Bhoa12/brawl-competitive/main/backend/public/meta.json"
 
     private val metaUrl: String
-        get() = BuildConfig.COMPETITIVE_API_BASE_URL.trim()
-            .takeIf { it.isNotEmpty() } ?: DEFAULT_META_URL
+        get() {
+            val base = BuildConfig.COMPETITIVE_API_BASE_URL.trim().removeSuffix("/")
+            return if (base.startsWith("http")) "$base/meta/snapshot" else DEFAULT_META_URL
+        }
 
     suspend fun loadMetaDocument(): MetaDocument? = withContext(Dispatchers.IO) {
         var connection: HttpURLConnection? = null
@@ -34,10 +36,17 @@ object CompetitiveRepository {
 
             val json = connection.inputStream.bufferedReader().use { it.readText() }
             val root = JSONObject(json)
+            val entries = root.optJSONArray("entries")
+                ?: root.optJSONArray("metrics")
+                ?: JSONArray()
             MetaDocument(
-                entries = parse(root.optJSONArray("entries") ?: JSONArray()),
-                generatedAt = root.optString("generatedAt").takeIf { it.isNotBlank() },
-                totalMatches = root.optInt("totalMatches").takeIf { it > 0 },
+                entries = parse(entries),
+                generatedAt = root.optString("generatedAt")
+                    .takeIf { it.isNotBlank() }
+                    ?: root.optString("updated_at").takeIf { it.isNotBlank() },
+                totalMatches = root.optInt("totalMatches")
+                    .takeIf { it > 0 }
+                    ?: root.optInt("sample_size").takeIf { it > 0 },
                 methodology = root.optString("methodology").takeIf { it.isNotBlank() }
             )
         } catch (_: Exception) {
