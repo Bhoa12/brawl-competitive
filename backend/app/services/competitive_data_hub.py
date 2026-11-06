@@ -4,6 +4,8 @@ from app.models.catalog import CatalogBrawler, CatalogImage, CatalogMap
 from app.services.catalog_service import catalog_service
 from app.services.providers.brawlapi_provider import brawlapi_provider
 
+RETIRED_BRAWLERS = {"BUZZ LIGHTYEAR"}
+
 @dataclass(frozen=True)
 class CompetitivePoolVersion:
     season: str
@@ -50,7 +52,7 @@ class CompetitiveDataHub:
                 image=CatalogImage(url=(item.get("imageUrl") or {}).get("portrait")),
             )
             for item in raw_brawlers
-            if item.get("name") and item.get("released", True)
+            if item.get("name") and item.get("released", True) and item.get("name", "").strip().upper() not in RETIRED_BRAWLERS
         ]
 
         # The upstream catalog contains historical maps. Until a verified
