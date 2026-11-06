@@ -25,6 +25,7 @@ import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
 import com.bhoa.brawlcompetitive.ui.MapCatalogScreen
 import com.bhoa.brawlcompetitive.ui.CountersScreen
 import com.bhoa.brawlcompetitive.ui.MetaOverviewScreen
+import com.bhoa.brawlcompetitive.ui.ProfileScreen
 import com.bhoa.brawlcompetitive.data.Brawler
 import coil3.compose.AsyncImage
 
@@ -37,6 +38,16 @@ class MainActivity : ComponentActivity() {
 
 private enum class Section(val title: String) {
     HOME("Inicio"), META("Meta"), MAPS("Mapas"), BRAWLERS("Brawlers"), COUNTERS("Counters"), PROFILE("Perfil")
+}
+
+
+private fun sectionIcon(section: Section) = when (section) {
+    Section.HOME -> Icons.Default.Home
+    Section.META -> Icons.Default.BarChart
+    Section.MAPS -> Icons.Default.Place
+    Section.BRAWLERS -> Icons.Default.Person
+    Section.COUNTERS -> Icons.Default.CompareArrows
+    Section.PROFILE -> Icons.Default.AccountCircle
 }
 
 @Composable
@@ -68,7 +79,7 @@ fun BrawlCompetitiveApp() {
                     Section.MAPS -> MapCatalogScreen()
                     Section.META -> MetaOverviewScreen()
                     Section.COUNTERS -> CountersScreen()
-                    Section.PROFILE -> PlaceholderScreen("Perfil", "Busca un jugador mediante su tag cuando conectemos la API oficial.")
+                    Section.PROFILE -> ProfileScreen()
                 }
             }
         }
@@ -96,41 +107,3 @@ fun BrawlCompetitiveApp() {
     }
 }
 
-@Composable private fun CatalogScreen(title: String, entries: List<VisualEntry>) {
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp))
-        LazyVerticalGrid(columns = GridCells.Adaptive(150.dp), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(entries) { entry ->
-                ElevatedCard {
-                    Column {
-                        AsyncImage(model = entry.image, contentDescription = entry.name, modifier = Modifier.fillMaxWidth().height(120.dp), contentScale = ContentScale.Crop)
-                        Text(entry.name, Modifier.padding(12.dp), fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable private fun PlaceholderScreen(title: String, text: String) {
-    Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center) {
-        Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(10.dp))
-        Text(text)
-    }
-}
-
-private fun sectionIcon(section: Section) = when (section) {
-    Section.HOME -> Icons.Default.Home
-    Section.META -> Icons.Default.Star
-    Section.MAPS -> Icons.Default.Place
-    Section.BRAWLERS -> Icons.Default.Person
-    Section.COUNTERS -> Icons.Default.Shield
-    Section.PROFILE -> Icons.Default.AccountCircle
-}
-
-private data class VisualEntry(val name: String, val image: String)
-private val demoMaps = listOf(
-    VisualEntry("Mapas competitivos", "https://cdn.brawlify.com/maps/15000000.png")
-)

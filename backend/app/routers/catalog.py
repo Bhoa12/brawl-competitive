@@ -13,4 +13,4 @@ async def brawlers():
 
 @router.get("/maps")
 async def maps():
-    return catalog_service.get().maps
+    return [game_map for game_map in catalog_service.get().maps if game_map.active]

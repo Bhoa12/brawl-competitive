@@ -20,6 +20,16 @@ class OfficialBrawlStarsClient:
             raise RuntimeError("BRAWL_STARS_API_TOKEN is not configured")
         return {"Authorization": f"Bearer {self.token}", "Accept": "application/json"}
 
+    async def player(self, player_tag: str) -> dict:
+        encoded_tag = player_tag if player_tag.startswith("%23") else "%23" + player_tag.lstrip("#")
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.get(
+                f"{BASE_URL}/players/{encoded_tag}",
+                headers=self._headers(),
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def battle_log(self, player_tag: str) -> dict:
         encoded_tag = player_tag if player_tag.startswith("%23") else "%23" + player_tag.lstrip("#")
         async with httpx.AsyncClient(timeout=20) as client:
