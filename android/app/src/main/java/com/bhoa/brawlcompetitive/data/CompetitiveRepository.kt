@@ -65,7 +65,7 @@ object CompetitiveRepository {
 
     suspend fun loadCatalogBrawlers(): List<Brawler> = loadCatalogArray("/catalog/brawlers") { item ->
         val image = item.optJSONObject("image")?.optString("url")?.takeIf { it.isNotBlank() }
-        Brawler(id = item.optString("id"), name = item.optString("name"), imageUrl = image, description = null, brawlerClass = null, rarity = null)
+        Brawler(id = item.optString("id"), name = item.optString("name"), imageUrl = image, description = null, brawlerClass = null, rarity = null, gadgets = parseAssets(item.optJSONArray("gadgets")), starPowers = parseAssets(item.optJSONArray("starPowers")), gears = parseAssets(item.optJSONArray("gears")), buffies = parseAssets(item.optJSONArray("buffies")))
     }
 
     suspend fun loadCompetitiveMaps(): List<BrawlMap> = loadCatalogArray("/catalog/maps") { item ->
@@ -90,6 +90,16 @@ object CompetitiveRepository {
             emptyList()
         } finally {
             connection?.disconnect()
+        }
+    }
+
+    private fun parseAssets(array: JSONArray?): List<VisualAsset> = buildList {
+        if (array == null) return@buildList
+        for (i in 0 until array.length()) {
+            val item = array.optJSONObject(i) ?: continue
+            val image = item.optJSONObject("image")?.optString("url")?.takeIf { it.isNotBlank() }
+                ?: item.optString("imageUrl").takeIf { it.isNotBlank() }
+            add(VisualAsset(item.optString("id"), item.optString("name"), image, item.optString("description").takeIf { it.isNotBlank() }))
         }
     }
 
