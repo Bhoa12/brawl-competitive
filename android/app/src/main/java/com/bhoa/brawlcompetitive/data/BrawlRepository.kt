@@ -71,16 +71,5 @@ object BrawlRepository {
         }
     }
 
-    private fun fallback(): List<Brawler> =
-        listOf("Shelly","Nita","Colt","Bull","Jessie","Brock","Dynamike","Bo","Tick","8-Bit","Emz","El Primo","Barley","Poco","Rosa","Rico","Darryl","Penny","Carl","Jacky","Piper","Pam","Frank","Bibi","Bea","Nani","Edgar","Griff","Grom","Bonnie","Gus","Sam","Mandy","Maisie","Hank","Pearl","Larry & Lawrie","Angelo","Melodie","Lily","Clancy","Moe","Kenji","Shade","Juju","Meeple","Ollie","Lumi")
-            .mapIndexed { index, name ->
-                Brawler(
-                    id = (index + 1).toString(),
-                    name = name,
-                    imageUrl = null,
-                    description = null,
-                    brawlerClass = null,
-                    rarity = null
-                )
-            }
+    private fun fallback(): List<Brawler> = emptyList()
 }
