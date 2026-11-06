@@ -40,6 +40,16 @@ private enum class Section(val title: String) {
     HOME("Inicio"), META("Meta"), MAPS("Mapas"), BRAWLERS("Brawlers"), COUNTERS("Counters"), PROFILE("Perfil")
 }
 
+
+private fun sectionIcon(section: Section) = when (section) {
+    Section.HOME -> Icons.Default.Home
+    Section.META -> Icons.Default.BarChart
+    Section.MAPS -> Icons.Default.Place
+    Section.BRAWLERS -> Icons.Default.Person
+    Section.COUNTERS -> Icons.Default.CompareArrows
+    Section.PROFILE -> Icons.Default.AccountCircle
+}
+
 @Composable
 fun BrawlCompetitiveApp() {
     var section by remember { mutableStateOf(Section.HOME) }
