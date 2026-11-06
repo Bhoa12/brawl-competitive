@@ -26,13 +26,15 @@ object BrawlRepository {
     private fun parse(array: JSONArray): List<Brawler> = buildList {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
+            val name = item.optString("name")
+            if (name.equals("Buzz Lightyear", ignoreCase = true)) continue
             val gadgets = parseAssets(item.optJSONArray("gadgets"))
             val stars = parseAssets(item.optJSONArray("starPowers"))
             add(
                 Brawler(
                     id = item.optString("id"),
-                    name = item.optString("name"),
-                    imageUrl = item.optString("imageUrl").takeIf { it.isNotBlank() },
+                    name = name,
+                    imageUrl = extractImageUrl(item),
                     description = item.optString("description").takeIf { it.isNotBlank() },
                     brawlerClass = item.optJSONObject("class")?.optString("name"),
                     rarity = item.optJSONObject("rarity")?.optString("name"),
@@ -51,10 +53,21 @@ object BrawlRepository {
                 VisualAsset(
                     id = item.optString("id"),
                     name = item.optString("name"),
-                    imageUrl = item.optString("imageUrl").takeIf { it.isNotBlank() },
+                    imageUrl = extractImageUrl(item),
                     description = item.optString("description").takeIf { it.isNotBlank() }
                 )
             )
+        }
+    }
+
+    private fun extractImageUrl(item: JSONObject): String? {
+        val raw = item.opt("imageUrl")
+        return when (raw) {
+            is String -> raw.takeIf { it.isNotBlank() }
+            is JSONObject -> sequenceOf("icon", "portrait", "avatar").mapNotNull { key ->
+                raw.optString(key).takeIf { it.isNotBlank() }
+            }.firstOrNull()
+            else -> null
         }
     }
 
