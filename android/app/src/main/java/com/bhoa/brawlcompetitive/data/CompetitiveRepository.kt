@@ -41,9 +41,11 @@ object CompetitiveRepository {
                 ?: JSONArray()
             MetaDocument(
                 entries = parse(entries),
-                generatedAt = root.optString("generatedAt").takeIf { it.isNotBlank() }
+                generatedAt = root.optString("generatedAt")
+                    .takeIf { it.isNotBlank() }
                     ?: root.optString("updated_at").takeIf { it.isNotBlank() },
-                totalMatches = root.optInt("totalMatches").takeIf { it > 0 }
+                totalMatches = root.optInt("totalMatches")
+                    .takeIf { it > 0 }
                     ?: root.optInt("sample_size").takeIf { it > 0 },
                 methodology = root.optString("methodology").takeIf { it.isNotBlank() }
             )
@@ -56,21 +58,58 @@ object CompetitiveRepository {
 
     suspend fun loadMeta(): List<MetaEntry> = loadMetaDocument()?.entries ?: emptyList()
 
+    private fun backendUrl(path: String): String? {
+        val base = BuildConfig.COMPETITIVE_API_BASE_URL.trim().removeSuffix("/")
+        return base.takeIf { it.startsWith("http") }?.plus(path)
+    }
+
+    suspend fun loadCatalogBrawlers(): List<Brawler> = loadCatalogArray("/catalog/brawlers") { item ->
+        val image = item.optJSONObject("image")?.optString("url")?.takeIf { it.isNotBlank() }
+        Brawler(id = item.optString("id"), name = item.optString("name"), imageUrl = image, description = null, brawlerClass = null, rarity = null)
+    }
+
+    suspend fun loadCompetitiveMaps(): List<BrawlMap> = loadCatalogArray("/catalog/maps") { item ->
+        val image = item.optJSONObject("image")?.optString("url")?.takeIf { it.isNotBlank() }
+        BrawlMap(id = item.optString("id").toIntOrNull() ?: 0, name = item.optString("name"), mode = item.optString("mode"), imageUrl = image)
+    }
+
+    private suspend fun <T> loadCatalogArray(path: String, mapper: (JSONObject) -> T): List<T> = withContext(Dispatchers.IO) {
+        val url = backendUrl(path) ?: return@withContext emptyList()
+        var connection: HttpURLConnection? = null
+        try {
+            connection = URL(url).openConnection() as HttpURLConnection
+            connection.connectTimeout = 5000
+            connection.readTimeout = 10000
+            connection.setRequestProperty("Accept", "application/json")
+            if (connection.responseCode !in 200..299) return@withContext emptyList()
+            val array = JSONArray(connection.inputStream.bufferedReader().use { it.readText() })
+            buildList {
+                for (i in 0 until array.length()) array.optJSONObject(i)?.let { add(mapper(it)) }
+            }
+        } catch (_: Exception) {
+            emptyList()
+        } finally {
+            connection?.disconnect()
+        }
+    }
+
     private fun parse(array: JSONArray): List<MetaEntry> = buildList {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
-            add(MetaEntry(
-                brawlerId = item.optInt("brawlerId"),
-                brawlerName = item.optString("brawlerName"),
-                mapName = item.optString("mapName").takeIf { it.isNotBlank() },
-                mode = item.optString("mode").takeIf { it.isNotBlank() },
-                rank = item.optString("rank", "General"),
-                subRank = item.optString("subRank").takeIf { it.isNotBlank() },
-                pickRate = item.takeNullableDouble("pickRate"),
-                winRate = item.takeNullableDouble("winRate"),
-                sampleSize = item.optInt("sampleSize").takeIf { it > 0 },
-                updatedAt = item.optLong("updatedAt").takeIf { it > 0 }
-            ))
+            add(
+                MetaEntry(
+                    brawlerId = item.optInt("brawlerId"),
+                    brawlerName = item.optString("brawlerName"),
+                    mapName = item.optString("mapName").takeIf { it.isNotBlank() },
+                    mode = item.optString("mode").takeIf { it.isNotBlank() },
+                    rank = item.optString("rank", "General"),
+                    subRank = item.optString("subRank").takeIf { it.isNotBlank() },
+                    pickRate = item.takeNullableDouble("pickRate"),
+                    winRate = item.takeNullableDouble("winRate"),
+                    sampleSize = item.optInt("sampleSize").takeIf { it > 0 },
+                    updatedAt = item.optLong("updatedAt").takeIf { it > 0 }
+                )
+            )
         }
     }
 
