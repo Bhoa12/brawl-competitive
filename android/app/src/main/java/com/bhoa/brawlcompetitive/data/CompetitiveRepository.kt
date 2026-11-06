@@ -20,49 +20,52 @@ object CompetitiveRepository {
         "https://raw.githubusercontent.com/Bhoa12/brawl-competitive/main/backend/public/meta.json"
 
     private val metaUrl: String
-        get() = BuildConfig.COMPETITIVE_API_BASE_URL
-            .trim()
-            .takeIf { it.isNotEmpty() }
-            ?: DEFAULT_META_URL
+        get() = BuildConfig.COMPETITIVE_API_BASE_URL.trim()
+            .takeIf { it.isNotEmpty() } ?: DEFAULT_META_URL
 
     suspend fun loadMetaDocument(): MetaDocument? = withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
         try {
-            val connection = URL(metaUrl).openConnection() as HttpURLConnection
+            connection = URL(metaUrl).openConnection() as HttpURLConnection
             connection.connectTimeout = 5000
             connection.readTimeout = 10000
             connection.setRequestProperty("Accept", "application/json")
-            connection.use {
-                if (it.responseCode !in 200..299) return@withContext null
-                val root = JSONObject(it.inputStream.bufferedReader().use { reader -> reader.readText() })
-                MetaDocument(
-                    entries = parse(root.optJSONArray("entries") ?: JSONArray()),
-                    generatedAt = root.optString("generatedAt").takeIf { value -> value.isNotBlank() },
-                    totalMatches = root.optInt("totalMatches").takeIf { value -> value > 0 },
-                    methodology = root.optString("methodology").takeIf { value -> value.isNotBlank() }
-                )
-            }
+            if (connection.responseCode !in 200..299) return@withContext null
+
+            val json = connection.inputStream.bufferedReader().use { it.readText() }
+            val root = JSONObject(json)
+            MetaDocument(
+                entries = parse(root.optJSONArray("entries") ?: JSONArray()),
+                generatedAt = root.optString("generatedAt").takeIf { it.isNotBlank() },
+                totalMatches = root.optInt("totalMatches").takeIf { it > 0 },
+                methodology = root.optString("methodology").takeIf { it.isNotBlank() }
+            )
         } catch (_: Exception) {
             null
+        } finally {
+            connection?.disconnect()
         }
     }
 
     suspend fun loadMeta(): List<MetaEntry> = loadMetaDocument()?.entries ?: emptyList()
 
-    private fun parse(array: JSONArray) = buildList {
+    private fun parse(array: JSONArray): List<MetaEntry> = buildList {
         for (i in 0 until array.length()) {
             val item = array.optJSONObject(i) ?: continue
-            add(MetaEntry(
-                brawlerId = item.optInt("brawlerId"),
-                brawlerName = item.optString("brawlerName"),
-                mapName = item.optString("mapName").takeIf { it.isNotBlank() },
-                mode = item.optString("mode").takeIf { it.isNotBlank() },
-                rank = item.optString("rank", "General"),
-                subRank = item.optString("subRank").takeIf { it.isNotBlank() },
-                pickRate = item.takeNullableDouble("pickRate"),
-                winRate = item.takeNullableDouble("winRate"),
-                sampleSize = item.optInt("sampleSize").takeIf { it > 0 },
-                updatedAt = item.optLong("updatedAt").takeIf { it > 0 }
-            ))
+            add(
+                MetaEntry(
+                    brawlerId = item.optInt("brawlerId"),
+                    brawlerName = item.optString("brawlerName"),
+                    mapName = item.optString("mapName").takeIf { it.isNotBlank() },
+                    mode = item.optString("mode").takeIf { it.isNotBlank() },
+                    rank = item.optString("rank", "General"),
+                    subRank = item.optString("subRank").takeIf { it.isNotBlank() },
+                    pickRate = item.takeNullableDouble("pickRate"),
+                    winRate = item.takeNullableDouble("winRate"),
+                    sampleSize = item.optInt("sampleSize").takeIf { it > 0 },
+                    updatedAt = item.optLong("updatedAt").takeIf { it > 0 }
+                )
+            )
         }
     }
 
