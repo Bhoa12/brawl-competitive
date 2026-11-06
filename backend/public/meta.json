@@ -1,8 +1,7 @@
 {
   "version": 1,
-  "generatedAt": null,
-  "windowDays": 28,
-  "methodology": "No competitive sample has been collected yet. Entries remain empty until verified battle data is available.",
-  "totalMatches": 0,
-  "entries": []
+  "generatedAt": "2026-11-06T06:51:16.393Z",
+  "entries": [],
+  "methodology": "Aggregated from normalized recent battle logs",
+  "totalMatches": 0
 }
