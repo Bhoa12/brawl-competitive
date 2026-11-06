@@ -12,9 +12,9 @@ android {
         applicationId = "com.bhoa.brawlcompetitive"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.2.0"
-        val apiBaseUrl = (project.findProperty("COMPETITIVE_API_BASE_URL") as String?) ?: ""
+        versionCode = 2
+        versionName = "0.3.0"
+        val apiBaseUrl = (project.findProperty("COMPETITIVE_API_BASE_URL") as String?) ?: "https://brawl-competitive.onrender.com"
         buildConfigField("String", "COMPETITIVE_API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
