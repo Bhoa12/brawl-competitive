@@ -15,7 +15,9 @@ async def refresh_data():
 @router.get("/status")
 async def data_status():
     catalog = catalog_service.get()
+    ready = len(catalog.brawlers) > 0
     return {
+        "status": "ready" if ready else "degraded",
         "catalog_version": catalog.version,
         "catalog_updated_at": catalog.updated_at.isoformat(),
         "brawlers": len(catalog.brawlers),
