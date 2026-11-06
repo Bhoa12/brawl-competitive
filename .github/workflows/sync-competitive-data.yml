@@ -1,0 +1,17 @@
+name: Sync competitive data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backend sync
+        env:
+          SYNC_URL: ${{ secrets.COMPETITIVE_SYNC_URL }}
+        run: |
+          test -n "$SYNC_URL"
+          curl --fail-with-body --silent --show-error             --request POST             --max-time 60             "$SYNC_URL"
