@@ -56,7 +56,7 @@ object CompetitiveRepository {
 
     suspend fun loadCatalogBrawlers(): List<Brawler> = loadCatalogArray("/catalog/brawlers") { item ->
         val image = item.optJSONObject("image")?.optString("url")?.takeIf { it.isNotBlank() }
-        Brawler(id = item.optString("id"), name = item.optString("name"), imageUrl = image)
+        Brawler(id = item.optString("id"), name = item.optString("name"), imageUrl = image, description = null, brawlerClass = null, rarity = null)
     }
 
     suspend fun loadCompetitiveMaps(): List<BrawlMap> = loadCatalogArray("/catalog/maps") { item ->
