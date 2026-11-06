@@ -23,6 +23,8 @@ import com.bhoa.brawlcompetitive.ui.MetaScreen
 import com.bhoa.brawlcompetitive.ui.BrawlerCatalogScreen
 import com.bhoa.brawlcompetitive.ui.BrawlerDetailScreen
 import com.bhoa.brawlcompetitive.ui.MapCatalogScreen
+import com.bhoa.brawlcompetitive.ui.MapDetailScreen
+import com.bhoa.brawlcompetitive.data.BrawlMap
 import com.bhoa.brawlcompetitive.ui.CountersScreen
 import com.bhoa.brawlcompetitive.ui.MetaOverviewScreen
 import com.bhoa.brawlcompetitive.ui.ProfileScreen
@@ -54,6 +56,7 @@ private fun sectionIcon(section: Section) = when (section) {
 fun BrawlCompetitiveApp() {
     var section by remember { mutableStateOf(Section.HOME) }
     var selectedBrawler by remember { mutableStateOf<Brawler?>(null) }
+    var selectedMap by remember { mutableStateOf<BrawlMap?>(null) }
     MaterialTheme {
         Scaffold(
             topBar = { TopAppBar(title = { Text("Brawl Competitive", fontWeight = FontWeight.Bold) }) },
@@ -73,10 +76,12 @@ fun BrawlCompetitiveApp() {
             Box(Modifier.padding(padding).fillMaxSize()) {
                 if (selectedBrawler != null) {
                     BrawlerDetailScreen(selectedBrawler!!) { selectedBrawler = null }
+                } else if (selectedMap != null) {
+                    MapDetailScreen(selectedMap!!) { selectedMap = null }
                 } else when (section) {
                     Section.HOME -> HomeScreen { section = it }
                     Section.BRAWLERS -> BrawlerCatalogScreen { selectedBrawler = it }
-                    Section.MAPS -> MapCatalogScreen()
+                    Section.MAPS -> MapCatalogScreen { selectedMap = it }
                     Section.META -> MetaOverviewScreen()
                     Section.COUNTERS -> CountersScreen()
                     Section.PROFILE -> ProfileScreen()
