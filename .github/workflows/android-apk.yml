@@ -26,7 +26,7 @@ jobs:
 
       - name: Build debug APK
         id: build
-        continue-on-error: true
+        continue-on-error: false
         run: |
           set -o pipefail
           gradle :app:assembleDebug --stacktrace --console=plain 2>&1 | tee ../build-output.log
