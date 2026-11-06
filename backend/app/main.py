@@ -11,6 +11,7 @@ from app.routers.statistics import router as statistics_router
 from app.routers.snapshots import router as snapshots_router
 from app.routers.persistent_statistics import router as persistent_statistics_router
 from app.routers.data_hub import router as data_hub_router
+from app.services.competitive_data_hub import competitive_data_hub
 
 init_db()
 
@@ -31,6 +32,14 @@ app.include_router(statistics_router)
 app.include_router(snapshots_router)
 app.include_router(persistent_statistics_router)
 app.include_router(data_hub_router)
+
+
+@app.on_event("startup")
+async def refresh_catalog_on_startup():
+    try:
+        await competitive_data_hub.refresh_catalog()
+    except Exception:
+        pass
 
 
 @app.get("/")
