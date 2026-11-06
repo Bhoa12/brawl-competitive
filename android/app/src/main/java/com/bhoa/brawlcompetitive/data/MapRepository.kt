@@ -21,6 +21,7 @@ object MapRepository {
     )
 
     suspend fun loadMaps(): List<BrawlMap> = withContext(Dispatchers.IO) {
+        CompetitiveRepository.loadCompetitiveMaps().takeIf { it.isNotEmpty() }?.let { return@withContext it }
         val connection = URL("https://api.brawlapi.com/v1/maps").openConnection() as HttpURLConnection
         connection.connectTimeout = 10000
         connection.readTimeout = 15000
