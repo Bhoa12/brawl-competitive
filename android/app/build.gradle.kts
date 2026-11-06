@@ -12,9 +12,9 @@ android {
         applicationId = "com.bhoa.brawlcompetitive"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.2.0"
-        val apiBaseUrl = (project.findProperty("COMPETITIVE_API_BASE_URL") as String?) ?: ""
+        versionCode = 2
+        versionName = "0.3.0"
+        val apiBaseUrl = (project.findProperty("COMPETITIVE_API_BASE_URL") as String?) ?: "https://brawl-competitive.onrender.com"
         buildConfigField("String", "COMPETITIVE_API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
@@ -47,4 +47,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 }
