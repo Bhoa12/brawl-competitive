@@ -40,7 +40,9 @@ object BrawlRepository {
                     brawlerClass = item.optJSONObject("class")?.optString("name"),
                     rarity = item.optJSONObject("rarity")?.optString("name"),
                     gadgets = gadgets,
-                    starPowers = stars
+                    starPowers = stars,
+                    gears = parseAssets(item.optJSONArray("gears") ?: item.optJSONArray("gear")),
+                    buffies = parseAssets(item.optJSONArray("buffies"))
                 )
             )
         }
@@ -65,7 +67,7 @@ object BrawlRepository {
         val raw = item.opt("imageUrl")
         return when (raw) {
             is String -> raw.takeIf { it.isNotBlank() }
-            is JSONObject -> sequenceOf("icon", "portrait", "avatar").mapNotNull { key ->
+            is JSONObject -> sequenceOf("icon", "portrait", "avatar", "map", "thumbnail").mapNotNull { key ->
                 raw.optString(key).takeIf { it.isNotBlank() }
             }.firstOrNull()
             else -> null
