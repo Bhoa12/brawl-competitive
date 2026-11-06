@@ -9,6 +9,7 @@ import java.net.URL
 
 object BrawlRepository {
     suspend fun loadBrawlers(): List<Brawler> = withContext(Dispatchers.IO) {
+        CompetitiveRepository.loadCatalogBrawlers().takeIf { it.isNotEmpty() }?.let { return@withContext it }
         val connection = URL("https://api.brawlapi.com/v1/brawlers").openConnection() as HttpURLConnection
         connection.connectTimeout = 10000
         connection.readTimeout = 15000
