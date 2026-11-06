@@ -45,7 +45,13 @@ fun CountersScreen() {
                     }
                 }
             }
-        } ?: run {\n            if (brawlers.isEmpty()) {\n                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }\n            } else {\n                Text("Selecciona un brawler para empezar.")\n            }\n        }
+        } ?: run {
+            if (brawlers.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else {
+                Text("Selecciona un brawler para empezar.")
+            }
+        }
     }
 }
 
