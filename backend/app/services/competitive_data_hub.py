@@ -12,13 +12,15 @@ class CompetitivePoolVersion:
     updated_at: str
     source: str
 
+# Deliberately separate the curated Ranked pool from the full historical map catalog.
+# The pool must be updated from a verified seasonal source rather than treating every
+# map returned by a static API as competitive.
 COMPETITIVE_POOL_VERSION = CompetitivePoolVersion(
-    season="current",
+    season="curated-current",
     updated_at="2026-11-06",
     source="Competitive Data Hub",
 )
 
-# Current Ranked pool is maintained separately from the historical map catalog.
 COMPETITIVE_MAP_POOL = {
     "Gem Grab": {"Double Swoosh", "Undermine", "Gem Fort", "Hard Rock Mine"},
     "Brawl Ball": {"Center Stage", "Sneaky Fields", "Triple Dribble", "Pinball Dreams"},
@@ -34,14 +36,18 @@ def competitive_mode_for(name: str) -> str | None:
             return mode
     return None
 
-class CompetitiveDataHub:
-    """
-    Central normalization boundary for game and competitive data.
-    Upstream providers can be added without changing Android clients.
-    Competitive map activation is intentionally separate from the full
-    historical map catalog.
-    """
+def image_url(item: dict) -> str | None:
+    value = item.get("imageUrl")
+    if isinstance(value, str):
+        return value or None
+    if isinstance(value, dict):
+        for key in ("portrait", "icon", "map", "thumbnail", "avatar"):
+            candidate = value.get(key)
+            if candidate:
+                return candidate
+    return None
 
+class CompetitiveDataHub:
     async def refresh_catalog(self) -> dict:
         raw_brawlers, raw_maps, source = await brawlapi_provider.fetch_catalog()
 
@@ -49,26 +55,27 @@ class CompetitiveDataHub:
             CatalogBrawler(
                 id=str(item.get("id", "")),
                 name=item.get("name", ""),
-                image=CatalogImage(url=(item.get("imageUrl") or {}).get("portrait")),
+                image=CatalogImage(url=image_url(item)),
             )
             for item in raw_brawlers
-            if item.get("name") and item.get("released", True) and item.get("name", "").strip().upper() not in RETIRED_BRAWLERS
+            if item.get("name") and item.get("released", True)
+            and item.get("name", "").strip().upper() not in RETIRED_BRAWLERS
         ]
 
-        # The upstream catalog contains historical maps. Until a verified
-        # competitive rotation feed is configured, expose maps as inactive
-        # rather than incorrectly presenting the entire history as competitive.
-        maps = [
-            CatalogMap(
+        maps = []
+        for item in raw_maps:
+            name = item.get("name", "")
+            mode = competitive_mode_for(name)
+            if not name or mode is None:
+                continue
+            game_mode = item.get("gameMode") or {}
+            maps.append(CatalogMap(
                 id=str(item.get("id", "")),
-                name=item.get("name", ""),
-                mode=competitive_mode_for(item.get("name", "")) or (item.get("gameMode") or {}).get("name"),
-                image=CatalogImage(url=((item.get("imageUrl") or {}).get("map"))),
-                active=competitive_mode_for(item.get("name", "")) is not None,
-            )
-            for item in raw_maps
-            if item.get("name")
-        ]
+                name=name,
+                mode=mode or game_mode.get("name"),
+                image=CatalogImage(url=image_url(item)),
+                active=True,
+            ))
 
         catalog = catalog_service.replace(
             version=f"{source.source}-{datetime.now(timezone.utc).date().isoformat()}",
@@ -82,8 +89,7 @@ class CompetitiveDataHub:
             "pool_source": COMPETITIVE_POOL_VERSION.source,
             "updated_at": catalog.updated_at.isoformat(),
             "brawlers": len(brawlers),
-            "maps_cached": len(maps),
-            "competitive_maps_active": sum(1 for game_map in maps if game_map.active),
+            "competitive_maps_active": len(maps),
         }
 
 competitive_data_hub = CompetitiveDataHub()
