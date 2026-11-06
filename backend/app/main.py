@@ -10,6 +10,7 @@ from app.routers.ingestion import router as ingestion_router
 from app.routers.statistics import router as statistics_router
 from app.routers.snapshots import router as snapshots_router
 from app.routers.persistent_statistics import router as persistent_statistics_router
+from app.routers.data_hub import router as data_hub_router
 
 init_db()
 
@@ -29,6 +30,7 @@ app.include_router(ingestion_router)
 app.include_router(statistics_router)
 app.include_router(snapshots_router)
 app.include_router(persistent_statistics_router)
+app.include_router(data_hub_router)
 
 
 @app.get("/")
