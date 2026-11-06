@@ -35,7 +35,7 @@ fun CompetitiveMetaScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Meta competitivo", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Selecciona el contexto competitivo y consulta los datos disponibles.")
+        Text("Filtra por el pool competitivo, modo, rango y subrango antes de consultar el meta.")
 
         FilterSelector("Mapa", selectedMap?.name ?: "Todos", maps.map { it.name }) { name ->
             selectedMap = maps.firstOrNull { option -> option.name == name }
@@ -103,7 +103,7 @@ fun MetaScreen() {
     } else {
         Column {
             CompetitiveMetaScreen(
-                maps = emptyList(),
+                maps = state.availableMaps.map { CompetitiveFilterOption(it.id, it.name, it.imageUrl) },
                 modes = listOf("Atrapagemas", "Balón Brawl", "Noqueo", "Atraco", "Caza Estelar"),
                 ranks = listOf("Bronce", "Plata", "Oro", "Diamante", "Mítico", "Legendario", "Maestro"),
                 subranks = listOf("I", "II", "III"),
@@ -123,7 +123,7 @@ fun MetaScreen() {
                 Text("Consultar meta")
             }
             state.error?.let {
-                Text(it, modifier = Modifier.padding(16.dp))
+                Text("No se ha podido cargar el meta: " + it, modifier = Modifier.padding(16.dp))
             }
         }
     }
